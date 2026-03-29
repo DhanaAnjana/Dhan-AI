@@ -11,7 +11,12 @@ type Message = { role: "user" | "assistant"; content: string };
 // Dynamically builds a persona explanation using the *actual* data extracted from the user's PDF
 function getPersonaExplanation(persona: string, fullState: any): string {
   const ghosts: any[] = fullState?.ghost_expenses || [];
-  const ghostNames = ghosts.map((g: any) => g.merchant).slice(0, 3).join(", ") || "recurring small payments";
+  // Safety check: handle if g is a string (legacy) or an object (new standard)
+  const ghostNames = ghosts
+    .map((g: any) => (typeof g === "string" ? g : g.merchant))
+    .filter(Boolean)
+    .slice(0, 3)
+    .join(", ") || "recurring small payments";
   const fiNumber: number = fullState?.fi_number || 0;
   const successRate: number = fullState?.monte_carlo_success_rate || 0;
 

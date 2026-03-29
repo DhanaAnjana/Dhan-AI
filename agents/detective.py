@@ -20,10 +20,9 @@ Analyze the following data:
 Transactions: {tx_json}
 Gold Metrics: {gold_json}
 
-Return ONLY a valid JSON object with NO extra text, comments, or markdown formatting. The JSON must have exactly these 3 keys:
+Return ONLY a valid JSON object with NO extra text, comments, or markdown formatting. The JSON must have exactly these 2 keys:
 1. "persona": A short string describing their spending behavior (e.g., "The Subscription Collector", "The Impulse Spender").
 2. "categorised_transactions": The exact same list of transactions provided, but add a new string field "needs_or_wants" (either "needs" or "wants") to each transaction.
-3. "ghost_expenses": A list of strings containing merchant names that appear as recurring small debits.
 
 Valid JSON only:"""
 
@@ -54,17 +53,14 @@ Valid JSON only:"""
         return {
             "user_persona": data.get("persona", "The Unknown Spender"),
             "clean_transactions": updated_txs,
-            "ghost_expenses": data.get("ghost_expenses", []),
         }
         
     except json.JSONDecodeError:
         # Fall back to the raw string if parsing fails
         return {
             "user_persona": response_text[:200] + "... (Parser Error)",
-            "ghost_expenses": [],
         }
     except Exception as e:
         return {
             "user_persona": f"Error: {str(e)}",
-            "ghost_expenses": [],
         }

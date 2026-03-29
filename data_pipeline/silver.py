@@ -9,8 +9,8 @@ BANK_EXTRACTION_PATTERNS = {
     # SBI uses DD-MM-YYYY
     "SBI": r"(?P<date>\d{2}-\d{2}-\d{4})\s+(?P<merchant>(?:(?!\d{2}-\d{2}-\d{4}).)+?)\s+(?P<amount>[\d,]+\.\d{2})\s*(?P<type>Cr|Dr)?",
     
-    # ICICI uses DD-MM-YYYY with negative signs for debits (and no explicit cr/dr)
-    "ICICI": r"(?P<date>\d{2}-\d{2}-\d{4})\s+(?P<merchant>(?:(?!\d{2}-\d{2}-\d{4}).)+?)\s+(?P<amount>-?[\d,]+\.\d{2})",
+    # ICICI uses DD-MM-YYYY with negative signs for debits
+    "ICICI": r"(?P<date>\d{2}-\d{2}-\d{4})\s+(?P<merchant>(?:(?!\d{2}-\d{2}-\d{4}).)+?)\s+(?P<amount>-?[\d,]+\.\d{2})\s*(?P<type>Cr|Dr)?",
     
     # AXIS uses DD Mon YYYY format
     "AXIS": r"(?P<date>\d{2}\s+[A-Za-z]{3}\s+\d{4})\s+(?P<merchant>(?:(?!\d{2}\s+[A-Za-z]{3}\s+\d{4}).)+?)\s+(?P<amount>[\d,]+\.\d{2})\s*(?P<type>Cr|Dr)?",
