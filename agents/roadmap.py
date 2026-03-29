@@ -20,8 +20,8 @@ def roadmap_agent(state: AgentState) -> dict:
 User Profile:
 - Persona: {user_persona}
 - Ghost Expenses (recurring small debits to cut): {json.dumps(ghost_expenses)}
-- Financial Independence Target: Rs.{fi_number:,.0f}
-- Monte Carlo Success Rate at age 65: {success_rate:.1f}%
+- Financial Independence Target Corpus: Rs.{fi_number:,.0f}
+- Current Monte Carlo Success Probability: {success_rate:.1f}%
 - Expert Advice Context: {rag_context[:500]}
 
 Create a practical 6-month action roadmap. Follow this strict priority:
