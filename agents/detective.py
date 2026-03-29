@@ -33,7 +33,7 @@ Valid JSON only:"""
             
         chat_completion = groq_client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
-            model="llama3-8b-8192",
+            model="llama-3.1-8b-instant",
             temperature=0.1,  # Low temperature to restrict hallucinations and ensure valid JSON
             max_tokens=2048,
         )
