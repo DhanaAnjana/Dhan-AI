@@ -27,7 +27,11 @@ export default function FIREDashboard({ fiNumber, successRate }: { fiNumber: num
               <span className="font-medium text-sm tracking-wide uppercase">Target F.I. Corpus</span>
             </div>
             <p className="text-5xl font-black text-white font-mono tracking-tight">
-              ₹{(fiNumber / 100000).toLocaleString(undefined, { maximumFractionDigits: 1 })}L
+              {fiNumber >= 10000000 
+                ? `₹${(fiNumber / 10000000).toFixed(2)}Cr` 
+                : fiNumber >= 100000 
+                  ? `₹${(fiNumber / 100000).toFixed(2)}L` 
+                  : `₹${fiNumber.toLocaleString('en-IN')}`}
             </p>
           </div>
           

@@ -19,7 +19,7 @@ def roadmap_agent(state: AgentState) -> dict:
 Based on the following multidimensional user data:
 Persona: {user_persona}
 Ghost Expenses Identified: {json.dumps(ghost_expenses)}
-Financial Independence Target: {fi_number:,.2f}
+Financial Independence Target: ₹{fi_number:,.0f}
 Probability of hitting FI at 65: {success_rate}%
 Specialist RAG Advice: {rag_context}
 
@@ -30,8 +30,10 @@ You MUST strictly follow this priority order for allocation and tasks:
 3. Clear high-interest debt (>12%).
 4. Start goal-based SIPs.
 
+CRITICAL INSTRUCTION: You represent a premium Indian FinTech app. You MUST format all currency references in the summary and JSON strictly as Indian Rupees using the ₹ symbol. If a number is very large, format it cleanly using Indian Crores (Cr) or Lakhs (Lakh) phrasing (e.g. '₹10.8 Crores', NOT '$108 million' or '₹108,000,000'). Do NOT use the dollar sign ($) anywhere.
+
 Return ONLY a valid JSON object with NO extra text or markdown formatting. The JSON must have exactly two keys:
-1. "roadmap": A JSON array where each item has "month" (integer, 1 for month 1, 2 for month 2, etc.), "action" (string), and "amount" (float).
+1. "roadmap": A JSON array where each item has "month" (integer, 1 for month 1, 2 for month 2, etc.), "action" (string), and "amount" (integer in INR).
 2. "summary": A friendly plain-text summary explaining this overall roadmap to the user directly, written like an expert coach. Highlight their FI success rate and their persona.
 
 Valid JSON only:"""
