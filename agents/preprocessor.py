@@ -4,7 +4,8 @@ A preprocessing node that runs before the Detective agent.
 Converts raw_text → silver (clean_transactions) → gold (metrics + ghost expenses).
 This populates AgentState with real data so all downstream agents have actual numbers.
 """
-from data_pipeline.silver import process_silver, detect_bank
+from data_pipeline.silver import process_silver
+from data_pipeline.bronze import detect_bank
 from data_pipeline.gold import compute_gold_metrics
 from agents.state import AgentState
 
