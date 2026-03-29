@@ -5,12 +5,20 @@ import shutil
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from paddleocr import PaddleOCR
 
+import PyPDF2
+
 # Ensure raw data folder exists
 RAW_DATA_DIR = "raw_data"
 os.makedirs(RAW_DATA_DIR, exist_ok=True)
 
-# Initialize PaddleOCR
-ocr = PaddleOCR(use_angle_cls=True, lang="en")
+# Initialize OCR lazily to prevent massive memory usage on boot
+_ocr = None
+def get_ocr():
+    global _ocr
+    if _ocr is None:
+        from paddleocr import PaddleOCR
+        _ocr = PaddleOCR(use_angle_cls=True, lang="en")
+    return _ocr
 
 router = APIRouter()
 
@@ -56,21 +64,41 @@ async def upload_file(file: UploadFile = File(...)):
     with open(saved_file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
-    # Extract raw text with PaddleOCR
+    # Extract raw text with smart fallback
     raw_text = ""
     try:
-        # PaddleOCR handles both image paths and PDF paths in recent versions
-        result = ocr.ocr(saved_file_path, cls=True)
-        if result:
-            for res_page in result:
-                if res_page is not None:
-                    for line in res_page:
-                        # line format: [[[x1, y1], [x2, y2], [x3, y3], [x4, y4]], ('text', confidence)]
-                        extracted_string = line[1][0]
-                        raw_text += extracted_string + " \n"
+        if file_type == "pdf":
+            # For hackathon scale, bank statements are native PDFs. This bypasses the 
+            # 1.5GB RAM PaddleOCR spike which crashes Render's 512MB free tier immediately.
+            reader = PyPDF2.PdfReader(saved_file_path)
+            for page in reader.pages:
+                extracted = page.extract_text()
+                if extracted:
+                    raw_text += extracted + "\n"
+                    
+            # Auto-fallback to PaddleOCR only if it's an image-PDF with no native text
+            if len(raw_text.strip()) < 50:
+                print("PDF appears to be an image. Falling back to heavy OCR...")
+                ocr = get_ocr()
+                result = ocr.ocr(saved_file_path, cls=True)
+                if result:
+                    for res_page in result:
+                        if res_page is not None:
+                            for line in res_page:
+                                raw_text += line[1][0] + " \n"
+        else:
+            # Images natively enforce PaddleOCR ML
+            ocr = get_ocr()
+            result = ocr.ocr(saved_file_path, cls=True)
+            if result:
+                for res_page in result:
+                    if res_page is not None:
+                        for line in res_page:
+                            raw_text += line[1][0] + " \n"
+                            
     except Exception as e:
-        print(f"OCR Error: {e}")
-        raw_text = f"Error during OCR extraction: {str(e)}"
+        print(f"Extraction Error: {e}")
+        raw_text = f"Error during extraction: {str(e)}"
         
     return {
         "raw_text": raw_text.strip(),

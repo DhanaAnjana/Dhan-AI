@@ -24,6 +24,17 @@ export async function sendChat(query: string, currentState?: any) {
   return res.json();
 }
 
+export async function sendFollowUp(query: string, cachedState?: any) {
+  const res = await fetch(`${BASE_URL}/followup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_query: query, cached_state: cachedState }),
+  });
+  
+  if (!res.ok) throw new Error("Follow-up failed");
+  return res.json();
+}
+
 export async function calculateWhatIf(params: {
   monthly_income: number;
   monthly_expense: number;

@@ -15,26 +15,29 @@ def roadmap_agent(state: AgentState) -> dict:
     rag_context = state.get("rag_context", "")
     
     # Format inputs for LLM
-    prompt = f"""You are the Master Financial Planner orchestrating the user's roadmap.
-Based on the following multidimensional user data:
-Persona: {user_persona}
-Ghost Expenses Identified: {json.dumps(ghost_expenses)}
-Financial Independence Target: {fi_number:,.2f}
-Probability of hitting FI at 65: {success_rate}%
-Specialist RAG Advice: {rag_context}
+    prompt = f"""You are a concise, expert Indian financial planner.
 
-Generate a realistic month-by-month financial roadmap. 
-You MUST strictly follow this priority order for allocation and tasks:
-1. Establish an emergency fund of 6 months' expenses.
-2. Get term and health insurance.
-3. Clear high-interest debt (>12%).
-4. Start goal-based SIPs.
+User Profile:
+- Persona: {user_persona}
+- Ghost Expenses (recurring small debits to cut): {json.dumps(ghost_expenses)}
+- Financial Independence Target Corpus: Rs.{fi_number:,.0f}
+- Current Monte Carlo Success Probability: {success_rate:.1f}%
+- Expert Advice Context: {rag_context[:500]}
 
-Return ONLY a valid JSON object with NO extra text or markdown formatting. The JSON must have exactly two keys:
-1. "roadmap": A JSON array where each item has "month" (integer, 1 for month 1, 2 for month 2, etc.), "action" (string), and "amount" (float).
-2. "summary": A friendly plain-text summary explaining this overall roadmap to the user directly, written like an expert coach. Highlight their FI success rate and their persona.
+Create a practical 6-month action roadmap. Follow this strict priority:
+Month 1-2: Emergency Fund (6x monthly expenses)
+Month 3: Insurance (term + health)
+Month 4-5: Eliminate high-interest debt (above 12%)
+Month 6: Begin SIP investments
 
-Valid JSON only:"""
+RULES:
+- The "roadmap" array MUST have EXACTLY 6 items (month 1 through 6).
+- Each "amount" is a realistic monthly INR figure (not yearly, not cumulative).
+- The "summary" is 2-3 sentences max, casual coach tone, mentions persona and success rate.
+- Use ONLY Indian Rupees (Rs.). No dollar signs.
+
+Return ONLY this exact JSON structure, no markdown, no extra text:
+{{"roadmap": [{{"month": 1, "action": "...", "amount": 15000}}, ...6 items total], "summary": "..."}}"""
 
     try:
         if groq_client is None:
@@ -45,9 +48,9 @@ Valid JSON only:"""
                 {"role": "system", "content": "You output only strictly formatted JSON objects without conversational padding."},
                 {"role": "user", "content": prompt}
             ],
-            model="llama3-8b-8192",
-            temperature=0.2, 
-            max_tokens=2048,
+            model="llama-3.1-8b-instant",
+            temperature=0.1,
+            max_tokens=1024,
         )
         
         response_text = chat_completion.choices[0].message.content.strip()
@@ -65,9 +68,10 @@ Valid JSON only:"""
         }
         
     except json.JSONDecodeError:
+        # Don't dump raw JSON to the user — show a clean error and let them retry
         return {
             "roadmap": [],
-            "final_response": f"I had trouble building your formal structural roadmap, but here is my raw thinking:\n{response_text}"
+            "final_response": "I assembled your financial roadmap but ran into a formatting hiccup. Head to the Dashboard to see your FIRE number and ghost expenses — or try asking me a specific question like 'What should I do first?'"
         }
     except Exception as e:
         return {
