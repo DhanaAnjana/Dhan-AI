@@ -8,3 +8,7 @@ services:
     envVars:
       - key: GROQ_API_KEY
         sync: false
+      - key: CHROMA_CACHE_DIR
+        value: "/opt/render/project/src/.chroma_cache"
+      - key: HF_HOME
+        value: "/opt/render/project/src/.hf_cache"
