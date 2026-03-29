@@ -1,8 +1,8 @@
-# Dhan-I: Your AI-Powered Cognitive Financial Twin
+# Dhan-AI: Your AI-Powered Cognitive Financial Twin
 
-Dhan-I is an advanced AI-powered Cognitive Financial Twin designed to turn confused Indian savers into confident investors. By analyzing and extracting raw banking telemetry with PaddleOCR, a fleet of LangGraph micro-agents automatically maps a user's unique financial footprint. It detects dangerous "ghost expenses", isolates financial behaviors into a distinct Persona, and generates a concrete, mathematically-backed Execution Roadmap. 
+Dhan-AI is an advanced AI-powered Cognitive Financial Twin designed to turn confused Indian savers into confident investors. By analyzing and extracting raw banking telemetry with PaddleOCR, a fleet of LangGraph micro-agents automatically maps a user's unique financial footprint. It detects dangerous "ghost expenses", isolates financial behaviors into a distinct Persona, and generates a concrete, mathematically-backed Execution Roadmap. 
 
-At the core of Dhan-I sits a highly responsive Interactive What-If Simulator running local Monte Carlo probabilistic models overlaid against Nifty-50 historical data and Indian inflation vectors. This interactive gateway allows the user to immediately understand their precise Financial Independence (FIRE) number, dynamically tweaking their SIP investments and retirement timeline to calculate their 10-year probability of absolute financial success. All driven through a clean Next.js architecture orchestrated seamlessly under the hood without complicated accounting jargon.
+At the core of Dhan-AI sits a highly responsive Interactive What-If Simulator running local Monte Carlo probabilistic models overlaid against Nifty-50 historical data and Indian inflation vectors. This interactive gateway allows the user to immediately understand their precise Financial Independence (FIRE) number, dynamically tweaking their SIP investments and retirement timeline to calculate their 10-year probability of absolute financial success. All driven through a clean Next.js architecture orchestrated seamlessly under the hood without complicated accounting jargon.
 
 ## Local Development Guide
 
