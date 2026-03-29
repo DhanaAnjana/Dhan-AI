@@ -28,6 +28,25 @@ async def chat_endpoint(request: ChatRequest):
         state.update(request.current_state)
         
     state["user_query"] = request.user_query
+
+    # ── Infer monthly income from actual credit transactions ───────────────
+    # This ensures the FIRE number reflects each user's real data, not defaults.
+    clean_txns = state.get("clean_transactions", [])
+    if clean_txns:
+        credits = [t["amount"] for t in clean_txns if t.get("type") == "credit"]
+        if credits:
+            import statistics
+            # Use median credit per month as a proxy for regular income
+            inferred_income = statistics.median(credits)
+            existing_params = state.get("what_if_params") or {}
+            if not existing_params.get("monthly_income"):
+                state["what_if_params"] = {
+                    **existing_params,
+                    "monthly_income": inferred_income,
+                    "monthly_sip": max(0, inferred_income * 0.15),  # default 15% savings rate
+                    "current_corpus": existing_params.get("current_corpus", 200000.0),
+                    "age": existing_params.get("age", 28),
+                }
     
     # Thread the state context through all Agent Nodes sequentially
     final_state = app_graph.invoke(state)

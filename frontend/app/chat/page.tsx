@@ -8,23 +8,33 @@ import { motion, AnimatePresence } from "framer-motion";
 
 type Message = { role: "user" | "assistant"; content: string };
 
-// Maps LLM-generated persona names to friendly explanations shown in chat
-const PERSONA_EXPLANATIONS: Record<string, string> = {
-  "impulse spender": `🛍️ **You've been classified as an Impulse Spender.**\n\nThis means your transactions show frequent small, unplanned purchases — things like late-night Swiggy orders, weekend splurges, or random UPI payments that individually feel harmless but collectively drain your savings. Your spending is emotional and reactive rather than planned.\n\n💡 The good news? Just becoming aware of triggers is half the battle. Small habit shifts here create massive FIRE gains over time.`,
-  "subscription collector": `📱 **You've been classified as a Subscription Collector.**\n\nYour statement shows multiple recurring small charges — streaming services, app subscriptions, premium plans — spread across months. These "set and forget" debits are the sneakiest drain on a budget because each one feels cheap individually, but together they compound into a significant monthly leak.\n\n💡 Cutting even 2-3 of these and redirecting that amount into a SIP can meaningfully shift your FIRE probability.`,
-  "social spender": `👥 **You've been classified as a Social Spender.**\n\nYour money flows heavily around people — splitting bills, sending money to friends, eating out, events, and experiences. Your financial life is deeply social, which makes it hard to say no in the moment.\n\n💡 This isn't a bad thing — experiences have real value! The fix is building an "experience budget" so social spending becomes intentional, not a leakage.`,
-  "default": `🧠 **Your Financial Persona has been mapped.**\n\nOur Detective Agent analyzed your transaction patterns across merchants, amounts, and timing to assign this profile. It reflects where your money goes instinctively — the unconscious habits behind your numbers.\n\n💡 Understanding your persona is the first step. Your 6-month roadmap has been calibrated specifically around it.`,
-};
+// Dynamically builds a persona explanation using the *actual* data extracted from the user's PDF
+function getPersonaExplanation(persona: string, fullState: any): string {
+  const ghosts: any[] = fullState?.ghost_expenses || [];
+  const ghostNames = ghosts.map((g: any) => g.merchant).slice(0, 3).join(", ") || "recurring small payments";
+  const fiNumber: number = fullState?.fi_number || 0;
+  const successRate: number = fullState?.monte_carlo_success_rate || 0;
 
-function getPersonaExplanation(persona: string): string {
+  const fiStr = fiNumber >= 10000000
+    ? `₹${(fiNumber / 10000000).toFixed(2)} Crores`
+    : fiNumber >= 100000
+      ? `₹${(fiNumber / 100000).toFixed(2)} Lakhs`
+      : `₹${fiNumber.toLocaleString("en-IN")}`;
+
   const lower = persona.toLowerCase().replace(/[*"]/g, "").trim();
-  for (const key of Object.keys(PERSONA_EXPLANATIONS)) {
-    if (lower.includes(key)) return PERSONA_EXPLANATIONS[key];
+
+  if (lower.includes("impulse")) {
+    return `🛍️ **You've been classified as an Impulse Spender.**\n\nYour transactions show frequent small, unplanned purchases — your statement reveals recurring debits to merchants like **${ghostNames}**. These individually feel harmless but collectively drain your savings. Your spending pattern is reactive rather than planned.\n\n💡 Your FIRE target is **${fiStr}** with a **${successRate}% success rate**. Small habit shifts here create massive long-term gains.`;
   }
-  return PERSONA_EXPLANATIONS["default"].replace(
-    "Your Financial Persona has been mapped.",
-    `You've been classified as: **${persona}**`
-  );
+  if (lower.includes("subscription")) {
+    return `📱 **You've been classified as a Subscription Collector.**\n\nYour statement shows multiple recurring charges — specifically to **${ghostNames}**. These "set and forget" debits are the sneakiest budget drain because each one feels cheap alone, but together they compound into a significant monthly leak.\n\n💡 Your FIRE target is **${fiStr}**. Redirecting even 2 of these subscriptions into a SIP could meaningfully shift your **${successRate}% success rate** upward.`;
+  }
+  if (lower.includes("social")) {
+    return `👥 **You've been classified as a Social Spender.**\n\nYour money flows heavily around people — splitting bills, sending money, eating out. Your statement shows repeated payments to **${ghostNames}**, which reflects a deeply social spending style.\n\n💡 Your FIRE target is **${fiStr}** with a **${successRate}% success rate**. Building an intentional "experience budget" turns this from a leak into a planned line item.`;
+  }
+
+  // Fallback for any other persona the LLM generates
+  return `🧠 **You've been classified as: ${persona}**\n\nOur Detective Agent identified this pattern by analyzing your transaction timing, merchant recurrence, and spend distribution. The key recurring merchants detected were: **${ghostNames}**.\n\n💡 Your Financial Independence target is **${fiStr}** with a current Monte Carlo success rate of **${successRate}%**. Your 6-month roadmap has been calibrated around this profile.`;
 }
 
 const MESSAGES_KEY = "dhan_i_messages";
@@ -77,7 +87,7 @@ export default function ChatPage() {
       sessionStorage.setItem("dhan_i_state", JSON.stringify(res));
 
       const persona = res.full_state?.user_persona || "";
-      const personaExplanation = getPersonaExplanation(persona);
+      const personaExplanation = getPersonaExplanation(persona, res.full_state);
 
       setMessages([
         { role: "assistant", content: "Analysis complete! 🚀" },
